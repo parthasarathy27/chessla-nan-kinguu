@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SessionProvider } from "next-auth/react";
+import AuthProvider from "@/components/AuthProvider";
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -19,15 +19,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <SessionProvider>
+        <AuthProvider>
           <ThemeProvider>
             <Navbar />
             <main>{children}</main>
             <footer className="footer">
-              <p>© 2024 ChessMaster Pro — Powered by Gaming Co. All rights reserved.</p>
+              <p>Copyrights © 2026 ChessMaster Pro — Powered by Gaming Co. All rights reserved.</p>
             </footer>
           </ThemeProvider>
-        </SessionProvider>
+        </AuthProvider>
       </body>
     </html>
   );
