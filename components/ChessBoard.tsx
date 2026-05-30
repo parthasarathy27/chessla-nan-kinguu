@@ -42,10 +42,162 @@ const BOTS: ChessBot[] = [
 ];
 
 const THEME_COLORS = {
-  classic: { dark: "#769656", light: "#eeeed2" },
-  wood: { dark: "#b58863", light: "#f0d9b5" },
-  ocean: { dark: "#3b82f6", light: "#eff6ff" },
-  cyber: { dark: "#3f3f46", light: "#e4e4e7" }
+  classic: { 
+    name: "Classic", 
+    type: "solid", 
+    dark: "#769656", 
+    light: "#eeeed2",
+    darkStyle: { backgroundColor: "#769656" },
+    lightStyle: { backgroundColor: "#eeeed2" },
+    darkNotation: { color: "#769656", fontWeight: "700", fontSize: "13px" },
+    lightNotation: { color: "#eeeed2", fontWeight: "700", fontSize: "13px" }
+  },
+  wood: { 
+    name: "Wood", 
+    type: "solid", 
+    dark: "#b58863", 
+    light: "#f0d9b5",
+    darkStyle: { backgroundColor: "#b58863" },
+    lightStyle: { backgroundColor: "#f0d9b5" },
+    darkNotation: { color: "#b58863", fontWeight: "700", fontSize: "13px" },
+    lightNotation: { color: "#f0d9b5", fontWeight: "700", fontSize: "13px" }
+  },
+  ocean: { 
+    name: "Ocean", 
+    type: "solid", 
+    dark: "#3b82f6", 
+    light: "#eff6ff",
+    darkStyle: { backgroundColor: "#3b82f6" },
+    lightStyle: { backgroundColor: "#eff6ff" },
+    darkNotation: { color: "#3b82f6", fontWeight: "700", fontSize: "13px" },
+    lightNotation: { color: "#eff6ff", fontWeight: "700", fontSize: "13px" }
+  },
+  cyber: { 
+    name: "Cyber", 
+    type: "solid", 
+    dark: "#3f3f46", 
+    light: "#e4e4e7",
+    darkStyle: { backgroundColor: "#3f3f46" },
+    lightStyle: { backgroundColor: "#e4e4e7" },
+    darkNotation: { color: "#3f3f46", fontWeight: "700", fontSize: "13px" },
+    lightNotation: { color: "#e4e4e7", fontWeight: "700", fontSize: "13px" }
+  },
+  marble: {
+    name: "Gold Marble",
+    type: "texture",
+    dark: "#1b1a1f",
+    light: "#fcf9f2",
+    lightStyle: {
+      backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+          <rect width="200" height="200" fill="#fcf9f2"/>
+          <path d="M-10,40 C50,60 80,20 120,70 S170,120 210,130" fill="none" stroke="#dfb15b" stroke-width="1.5" opacity="0.35"/>
+          <path d="M50,-10 C80,30 110,80 90,120 S140,180 160,210" fill="none" stroke="#eed295" stroke-width="1" opacity="0.3"/>
+          <path d="M-10,150 C40,160 90,130 130,170 S180,160 210,195" fill="none" stroke="#dfb15b" stroke-width="0.8" opacity="0.2"/>
+        </svg>
+      `)}")`,
+      backgroundSize: "cover"
+    },
+    darkStyle: {
+      backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+          <rect width="200" height="200" fill="#1b1a1f"/>
+          <path d="M-10,30 C60,50 90,10 130,80 S160,110 210,140" fill="none" stroke="#dfb15b" stroke-width="1.8" opacity="0.55"/>
+          <path d="M30,-10 C70,40 100,70 80,130 S130,170 170,210" fill="none" stroke="#b58838" stroke-width="1.2" opacity="0.45"/>
+          <path d="M-10,160 C50,140 80,170 140,150 S170,180 210,180" fill="none" stroke="#eed295" stroke-width="0.8" opacity="0.35"/>
+        </svg>
+      `)}")`,
+      backgroundSize: "cover"
+    },
+    lightNotation: { color: "#b58838", fontWeight: "800", fontSize: "14px", textShadow: "0px 0px 2px rgba(255,255,255,0.8)" },
+    darkNotation: { color: "#dfb15b", fontWeight: "800", fontSize: "14px", textShadow: "0px 0px 2px rgba(0,0,0,0.8)" }
+  },
+  neonCyber: {
+    name: "Cyber Neon",
+    type: "texture",
+    dark: "#07080c",
+    light: "#15171e",
+    lightStyle: {
+      backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+          <rect width="100" height="100" fill="#15171e"/>
+          <rect x="3" y="3" width="94" height="94" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.25"/>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#3b82f6" stroke-width="0.5" opacity="0.15"/>
+          <path d="M 0 6 L 0 0 L 6 0 M 94 0 L 100 0 L 100 6 M 0 94 L 0 100 L 6 100 M 94 100 L 100 100 L 100 94" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+        </svg>
+      `)}")`,
+      backgroundSize: "cover"
+    },
+    darkStyle: {
+      backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+          <rect width="100" height="100" fill="#07080c"/>
+          <rect x="3" y="3" width="94" height="94" fill="none" stroke="#ec4899" stroke-width="1" opacity="0.3"/>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#a855f7" stroke-width="0.5" opacity="0.2"/>
+          <path d="M 0 6 L 0 0 L 6 0 M 94 0 L 100 0 L 100 6 M 0 94 L 0 100 L 6 100 M 94 100 L 100 100 L 100 94" fill="none" stroke="#ec4899" stroke-width="1.5" opacity="0.7"/>
+        </svg>
+      `)}")`,
+      backgroundSize: "cover"
+    },
+    lightNotation: { color: "#3b82f6", fontWeight: "800", fontSize: "14px", textShadow: "0px 0px 4px rgba(59,130,246,0.5)" },
+    darkNotation: { color: "#ec4899", fontWeight: "800", fontSize: "14px", textShadow: "0px 0px 4px rgba(236,72,153,0.5)" }
+  },
+  carbon: {
+    name: "Carbon Fiber",
+    type: "texture",
+    dark: "#22252a",
+    light: "#f3f4f6",
+    lightStyle: {
+      backgroundImage: `
+        linear-gradient(45deg, rgba(230,230,230,0.8) 25%, transparent 25%), 
+        linear-gradient(-45deg, rgba(230,230,230,0.8) 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, rgba(230,230,230,0.8) 75%), 
+        linear-gradient(-45deg, transparent 75%, rgba(230,230,230,0.8) 75%)
+      `,
+      backgroundColor: "#f3f4f6",
+      backgroundSize: "12px 12px"
+    },
+    darkStyle: {
+      backgroundImage: `
+        linear-gradient(45deg, #151515 25%, transparent 25%), 
+        linear-gradient(-45deg, #151515 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #151515 75%), 
+        linear-gradient(-45deg, transparent 75%, #151515 75%)
+      `,
+      backgroundColor: "#22252a",
+      backgroundSize: "12px 12px"
+    },
+    lightNotation: { color: "#6b7280", fontWeight: "800", fontSize: "13px" },
+    darkNotation: { color: "#9ca3af", fontWeight: "800", fontSize: "13px" }
+  },
+  luxuryWood: {
+    name: "Premium Wood",
+    type: "texture",
+    dark: "#a66a38",
+    light: "#ebd2b5",
+    lightStyle: {
+      backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+          <rect width="200" height="200" fill="#ebd2b5"/>
+          <path d="M0 50 Q 50 60 100 45 T 200 55 M0 100 Q 70 80 130 110 T 200 95 M0 150 Q 40 165 90 145 T 200 160" fill="none" stroke="#d2b48c" stroke-width="2.5" opacity="0.6"/>
+          <path d="M0 25 Q 60 15 110 35 T 200 20 M0 75 Q 30 90 80 70 T 200 80 M0 125 Q 80 135 140 120 T 200 130 M0 175 Q 50 185 110 170 T 200 180" fill="none" stroke="#dfc5a4" stroke-width="1.5" opacity="0.5"/>
+        </svg>
+      `)}")`,
+      backgroundSize: "cover"
+    },
+    darkStyle: {
+      backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+          <rect width="200" height="200" fill="#a66a38"/>
+          <path d="M0 50 Q 50 60 100 45 T 200 55 M0 100 Q 70 80 130 110 T 200 95 M0 150 Q 40 165 90 145 T 200 160" fill="none" stroke="#7a4821" stroke-width="3" opacity="0.75"/>
+          <path d="M0 25 Q 60 15 110 35 T 200 20 M0 75 Q 30 90 80 70 T 200 80 M0 125 Q 80 135 140 120 T 200 130 M0 175 Q 50 185 110 170 T 200 180" fill="none" stroke="#865026" stroke-width="2" opacity="0.6"/>
+        </svg>
+      `)}")`,
+      backgroundSize: "cover"
+    },
+    lightNotation: { color: "#78411b", fontWeight: "800", fontSize: "14px" },
+    darkNotation: { color: "#ebd2b5", fontWeight: "800", fontSize: "14px" }
+  }
 };
 
 export default function ChessBoardGame({
@@ -137,10 +289,49 @@ export default function ChessBoardGame({
   const [customHighlightSquare, setCustomHighlightSquare] = useState("rgba(168, 85, 247, 0.35)");
 
   useEffect(() => {
-    const colors = THEME_COLORS[boardTheme];
-    setCustomLightSquare(colors.light);
-    setCustomDarkSquare(colors.dark);
+    const theme = THEME_COLORS[boardTheme as keyof typeof THEME_COLORS];
+    if (theme) {
+      setCustomLightSquare(theme.light);
+      setCustomDarkSquare(theme.dark);
+    }
   }, [boardTheme]);
+
+  // Determine square styles dynamically with consistent keys to avoid React style property conflict warnings
+  const activeTheme = THEME_COLORS[boardTheme as keyof typeof THEME_COLORS] || THEME_COLORS.wood;
+  
+  const currentLightStyle = {
+    backgroundColor: activeTheme.type === "texture" ? activeTheme.light : customLightSquare,
+    backgroundImage: activeTheme.type === "texture" ? ((activeTheme.lightStyle as any)?.backgroundImage || "none") : "none",
+    backgroundSize: activeTheme.type === "texture" ? ((activeTheme.lightStyle as any)?.backgroundSize || "auto") : "auto"
+  };
+    
+  const currentDarkStyle = {
+    backgroundColor: activeTheme.type === "texture" ? activeTheme.dark : customDarkSquare,
+    backgroundImage: activeTheme.type === "texture" ? ((activeTheme.darkStyle as any)?.backgroundImage || "none") : "none",
+    backgroundSize: activeTheme.type === "texture" ? ((activeTheme.darkStyle as any)?.backgroundSize || "auto") : "auto"
+  };
+
+  // Helper to calculate contrast for manual selection notation text
+  function getContrastColor(hex: string, defaultColor: string) {
+    if (!hex || hex.startsWith("rgba") || hex.startsWith("linear") || hex.startsWith("radial")) {
+      return defaultColor;
+    }
+    const cleanHex = hex.replace("#", "");
+    if (cleanHex.length !== 6) return defaultColor;
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? "#1f1f24" : "#f7f7f9";
+  }
+
+  const currentLightNotationStyle = activeTheme.type === "texture"
+    ? activeTheme.lightNotation
+    : { color: getContrastColor(customLightSquare, (activeTheme.lightNotation as any)?.color || "#b58838"), fontWeight: "800", fontSize: "13px" };
+
+  const currentDarkNotationStyle = activeTheme.type === "texture"
+    ? activeTheme.darkNotation
+    : { color: getContrastColor(customDarkSquare, (activeTheme.darkNotation as any)?.color || "#f0d9b5"), fontWeight: "800", fontSize: "13px" };
 
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [highlightSq, setHighlightSq] = useState<Record<string, any>>({});
@@ -409,8 +600,10 @@ export default function ChessBoardGame({
               squareStyles: { ...highlightSq, ...optionSq },
               animationDurationInMs: 200,
               boardStyle: { borderRadius: "12px", boxShadow: "none", userSelect: "none" },
-              darkSquareStyle: { backgroundColor: customDarkSquare },
-              lightSquareStyle: { backgroundColor: customLightSquare },
+              darkSquareStyle: currentDarkStyle,
+              lightSquareStyle: currentLightStyle,
+              darkSquareNotationStyle: currentDarkNotationStyle,
+              lightSquareNotationStyle: currentLightNotationStyle,
               allowDragging: !isGameOver && !isAiThinking && !(gameMode === "ai" && chessRef.current.turn() !== (playerColor === "white" ? "w" : "b")),
               onPieceDrop: ({ piece, sourceSquare, targetSquare }) => {
                 if (gameOverRef.current || aiThinkingRef.current) return false;
@@ -680,11 +873,24 @@ export default function ChessBoardGame({
                         gap: 6
                       }}
                     >
-                      <div style={{ display: "flex", width: "40px", height: "40px", borderRadius: "4px", overflow: "hidden" }}>
-                        <div style={{ flex: 1, backgroundColor: colors.light }} />
-                        <div style={{ flex: 1, backgroundColor: colors.dark }} />
+                      <div style={{ 
+                        display: "flex", 
+                        width: "40px", 
+                        height: "40px", 
+                        borderRadius: "4px", 
+                        overflow: "hidden",
+                        border: "1px solid rgba(255,255,255,0.08)"
+                      }}>
+                        <div style={{ 
+                          flex: 1, 
+                          ...(colors.type === "texture" ? colors.lightStyle : { backgroundColor: colors.light })
+                        }} />
+                        <div style={{ 
+                          flex: 1, 
+                          ...(colors.type === "texture" ? colors.darkStyle : { backgroundColor: colors.dark })
+                        }} />
                       </div>
-                      <span style={{ fontSize: "0.8rem", textTransform: "capitalize", color: "var(--text)" }}>{themeKey}</span>
+                      <span style={{ fontSize: "0.8rem", textTransform: "capitalize", color: "var(--text)" }}>{colors.name}</span>
                     </button>
                   );
                 })}

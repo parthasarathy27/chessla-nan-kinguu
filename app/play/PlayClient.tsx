@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import { Globe, Bot, Sparkles, Trophy, Shuffle, Gamepad2, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -20,6 +20,127 @@ interface Props {
   userName: string;
   userRating: number;
   userAvatar: string;
+}
+
+interface PlayHubCardProps {
+  href?: string;
+  onClick?: () => void;
+  icon: React.ReactNode;
+  badgeText: string;
+  accentColor: string; // Hex color for the theme accents
+  title: string;
+  description: string;
+  actionText: string;
+}
+
+function HubCard({
+  href,
+  onClick,
+  icon,
+  badgeText,
+  accentColor,
+  title,
+  description,
+  actionText
+}: PlayHubCardProps) {
+  const cardContent = (
+    <motion.div
+      whileHover={{ 
+        y: -6, 
+        borderColor: accentColor, 
+        boxShadow: `0 16px 36px -12px ${accentColor}40`,
+        backgroundColor: "rgba(255, 255, 255, 0.03)"
+      }}
+      transition={{ type: "spring", stiffness: 350, damping: 22 }}
+      style={{
+        padding: 24,
+        background: "rgba(255, 255, 255, 0.015)",
+        backdropFilter: "blur(12px)",
+        borderRadius: "16px",
+        border: "1px solid rgba(255, 255, 255, 0.06)",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        gap: 20,
+        cursor: "pointer",
+        transition: "border-color 0.25s, background-color 0.25s"
+      }}
+    >
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+          <div style={{ 
+            width: 48, 
+            height: 48, 
+            borderRadius: 12, 
+            background: `${accentColor}15`, 
+            border: `1px solid ${accentColor}35`, 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center",
+            boxShadow: `inset 0 0 12px ${accentColor}10`
+          }}>
+            {icon}
+          </div>
+          <span style={{ 
+            fontSize: "0.72rem", 
+            fontWeight: 800, 
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            padding: "4px 10px", 
+            borderRadius: "9999px", 
+            background: `${accentColor}18`, 
+            color: accentColor,
+            border: `1px solid ${accentColor}25`
+          }}>
+            {badgeText}
+          </span>
+        </div>
+        <h3 style={{ 
+          fontSize: "1.3rem", 
+          fontWeight: 800, 
+          margin: "0 0 8px 0", 
+          color: "#ffffff",
+          letterSpacing: "-0.01em"
+        }}>
+          {title}
+        </h3>
+        <p style={{ 
+          fontSize: "0.88rem", 
+          color: "rgba(255, 255, 255, 0.6)", 
+          margin: 0, 
+          lineHeight: 1.5 
+        }}>
+          {description}
+        </p>
+      </div>
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 6, 
+        fontSize: "0.88rem", 
+        fontWeight: 700, 
+        color: accentColor
+      }}>
+        <span>{actionText}</span>
+        <ArrowRight size={15} />
+      </div>
+    </motion.div>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} style={{ textDecoration: "none", height: "100%", display: "block" }}>
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div onClick={onClick} style={{ height: "100%" }}>
+      {cardContent}
+    </div>
+  );
 }
 
 export default function PlayClient({ userName, userRating, userAvatar }: Props) {
@@ -70,132 +191,70 @@ export default function PlayClient({ userName, userRating, userAvatar }: Props) 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
         
         {/* Play Online Card */}
-        <Link href="/play/online" style={{ textDecoration: "none" }}>
-          <div className="glass-card play-hub-card" style={{ padding: 24, border: "1px solid var(--border)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(229,193,88,0.08)", border: "1px solid var(--border-gold)", display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center" }}>
-                  <Globe size={24} style={{ color: "var(--gold)" }} />
-                </div>
-                <span className="badge badge-gold">Live Arena</span>
-              </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0 0 6px 0", color: "var(--text)" }}>Play Online</h3>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.45 }}>
-                Challenge active chess players worldwide. Auto-matchmaking pairs you with opponents of similar ELO.
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", fontWeight: 600, color: "var(--gold)" }}>
-              Match Me Now <ArrowRight size={14} />
-            </div>
-          </div>
-        </Link>
+        <HubCard
+          href="/play/online"
+          icon={<Globe size={22} style={{ color: "#dfb15b" }} />}
+          badgeText="Live Arena"
+          accentColor="#dfb15b"
+          title="Play Online"
+          description="Challenge active chess players worldwide. Auto-matchmaking pairs you with opponents of similar ELO."
+          actionText="Match Me Now"
+        />
 
         {/* Play Bots Card */}
-        <Link href="/play/bots" style={{ textDecoration: "none" }}>
-          <div className="glass-card play-hub-card" style={{ padding: 24, border: "1px solid var(--border)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(168,85,247,0.08)", border: "1px solid rgba(168,85,247,0.3)", display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center" }}>
-                  <Bot size={24} style={{ color: "rgb(168, 85, 247)" }} />
-                </div>
-                <span className="badge badge-purple">VS Computer</span>
-              </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0 0 6px 0", color: "var(--text)" }}>Play Bots</h3>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.45 }}>
-                Challenge customizable computer engines. Play against personalities from friendly tutors to Grandmaster AI.
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", fontWeight: 600, color: "rgb(168, 85, 247)" }}>
-              Choose Bot Opponent <ArrowRight size={14} />
-            </div>
-          </div>
-        </Link>
+        <HubCard
+          href="/play/bots"
+          icon={<Bot size={22} style={{ color: "#c084fc" }} />}
+          badgeText="VS Computer"
+          accentColor="#c084fc"
+          title="Play Bots"
+          description="Challenge customizable computer engines. Play against personalities from friendly tutors to Grandmaster AI."
+          actionText="Choose Bot Opponent"
+        />
 
         {/* Play Coach Card */}
-        <Link href="/play/coach" style={{ textDecoration: "none" }}>
-          <div className="glass-card play-hub-card" style={{ padding: 24, border: "1px solid var(--border)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(212,175,55,0.08)", border: "1px solid var(--border-gold)", display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center" }}>
-                  <Sparkles size={24} style={{ color: "var(--gold)" }} />
-                </div>
-                <span className="badge badge-gold">Tutor Mode</span>
-              </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0 0 6px 0", color: "var(--text)" }}>Play Coach</h3>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.45 }}>
-                Play a training match with real-time feedback. The coach provides line evaluations and suggests the best moves.
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", fontWeight: 600, color: "var(--gold)" }}>
-              Start Tutored Match <ArrowRight size={14} />
-            </div>
-          </div>
-        </Link>
+        <HubCard
+          href="/play/coach"
+          icon={<Sparkles size={22} style={{ color: "#2dd4bf" }} />}
+          badgeText="Tutor Mode"
+          accentColor="#2dd4bf"
+          title="Play Coach"
+          description="Play a training match with real-time feedback. The coach provides line evaluations and suggests the best moves."
+          actionText="Start Tutored Match"
+        />
 
         {/* Tournaments Card */}
-        <Link href="/tournaments" style={{ textDecoration: "none" }}>
-          <div className="glass-card play-hub-card" style={{ padding: 24, border: "1px solid var(--border)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.3)", display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center" }}>
-                  <Trophy size={24} style={{ color: "rgb(59, 130, 246)" }} />
-                </div>
-                <span className="badge badge-success">Arena Bracket</span>
-              </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0 0 6px 0", color: "var(--text)" }}>Tournaments</h3>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.45 }}>
-                Enter live brackets, track tournament status, register for upcoming events, and check the bracket leaderboard.
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", fontWeight: 600, color: "rgb(59, 130, 246)" }}>
-              View Active Tournaments <ArrowRight size={14} />
-            </div>
-          </div>
-        </Link>
+        <HubCard
+          href="/tournaments"
+          icon={<Trophy size={22} style={{ color: "#fb923c" }} />}
+          badgeText="Championship"
+          accentColor="#fb923c"
+          title="Tournaments"
+          description="Enter live brackets, track tournament status, register for upcoming events, and check the bracket leaderboard."
+          actionText="View Active Tournaments"
+        />
 
         {/* Variants Card */}
-        <Link href="/variants" style={{ textDecoration: "none" }}>
-          <div className="glass-card play-hub-card" style={{ padding: 24, border: "1px solid var(--border)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.3)", display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center" }}>
-                  <Shuffle size={24} style={{ color: "rgb(34, 197, 94)" }} />
-                </div>
-                <span className="badge badge-success">Fun Modes</span>
-              </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0 0 6px 0", color: "var(--text)" }}>Chess Variants</h3>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.45 }}>
-                Play asymmetric configurations. Try Fischer Random (Chess960), Horde Chess (36 pawns), or King of the Hill.
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", fontWeight: 600, color: "rgb(34, 197, 94)" }}>
-              Select Custom Variant <ArrowRight size={14} />
-            </div>
-          </div>
-        </Link>
+        <HubCard
+          href="/variants"
+          icon={<Shuffle size={22} style={{ color: "#38bdf8" }} />}
+          badgeText="Fun Modes"
+          accentColor="#38bdf8"
+          title="Chess Variants"
+          description="Play asymmetric configurations. Try Fischer Random (Chess960), Horde Chess (36 pawns), or King of the Hill."
+          actionText="Select Custom Variant"
+        />
 
         {/* Quick Local Custom Game */}
-        <div 
-          onClick={() => setShowQuickBoard(true)} 
-          className="glass-card play-hub-card" 
-          style={{ padding: 24, border: "1px solid var(--border)", cursor: "pointer", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 }}
-        >
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center" }}>
-                <Gamepad2 size={24} style={{ color: "var(--text-muted)" }} />
-              </div>
-              <span className="badge badge-ghost">Standard Board</span>
-            </div>
-            <h3 style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0 0 6px 0", color: "var(--text)" }}>Quick Play</h3>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.45 }}>
-              Launch directly into the standard board interface. Instantly customize player color, board theme, and time controls.
-            </p>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", fontWeight: 600, color: "var(--text2)" }}>
-            Open Standard Board <ArrowRight size={14} />
-          </div>
-        </div>
+        <HubCard
+          onClick={() => setShowQuickBoard(true)}
+          icon={<Gamepad2 size={22} style={{ color: "#e2e8f0" }} />}
+          badgeText="Local Play"
+          accentColor="#e2e8f0"
+          title="Quick Play"
+          description="Launch directly into the standard board interface. Instantly customize player color, board theme, and time controls."
+          actionText="Open Standard Board"
+        />
 
       </div>
     </motion.div>
