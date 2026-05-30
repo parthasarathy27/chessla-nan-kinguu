@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingUser = findUserByEmail(email);
+    const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return NextResponse.json(
         { error: "Email address already registered" },
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       .toUpperCase()
       .substring(0, 2) || "U";
 
-    const newUser = addUser({
+    const newUser = await addUser({
       name,
       email,
       password,

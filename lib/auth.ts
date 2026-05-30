@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { findUserByEmail, getUsers } from "./users";
+import { findUserByEmail, INITIAL_USERS } from "./users";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -14,7 +14,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = findUserByEmail(credentials.email as string);
+        const user = await findUserByEmail(credentials.email as string);
 
         if (!user || user.password !== credentials.password) return null;
 
@@ -72,4 +72,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "chess-game-super-secret-key-gaming-company-2024",
 });
 
-export const DEMO_USERS = getUsers();
+export const DEMO_USERS = INITIAL_USERS;

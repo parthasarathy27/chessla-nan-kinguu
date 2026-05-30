@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+
 export interface User {
   id: string;
   name: string;
@@ -12,8 +14,8 @@ export interface User {
   draws: number;
 }
 
-// Default demo users
-const INITIAL_USERS: User[] = [
+// Default static demo users
+export const INITIAL_USERS: User[] = [
   {
     id: "1",
     name: "Grand Master",
@@ -55,18 +57,29 @@ const INITIAL_USERS: User[] = [
   },
 ];
 
-// Cache the in-memory array on globalThis to prevent Next.js from resetting it on hot-reloading
-const globalUsers = globalThis as unknown as { users?: User[] };
-if (!globalUsers.users) {
-  globalUsers.users = INITIAL_USERS;
+// Helper to fetch merged users list from static list and cookie store
+export async function getUsers(): Promise<User[]> {
+  const list = [...INITIAL_USERS];
+  try {
+    const cookieStore = await cookies();
+    const customUsersCookie = cookieStore.get("chess_registered_users")?.value;
+    if (customUsersCookie) {
+      const parsed = JSON.parse(decodeURIComponent(customUsersCookie));
+      if (Array.isArray(parsed)) {
+        list.push(...parsed);
+      }
+    }
+  } catch (e) {
+    // cookies() might throw if called outside request context (e.g. build time)
+  }
+  return list;
 }
 
-export function getUsers(): User[] {
-  return globalUsers.users!;
-}
-
-export function addUser(user: Omit<User, "id" | "rating" | "gamesPlayed" | "wins" | "losses" | "draws">): User {
-  const list = getUsers();
+export async function addUser(user: Omit<User, "id" | "rating" | "gamesPlayed" | "wins" | "losses" | "draws">): Promise<User> {
+  const list = await getUsers();
+  // Filter out static initial users to get only registered users
+  const customUsers = list.filter(u => !INITIAL_USERS.some(initial => initial.email.toLowerCase() === u.email.toLowerCase()));
+  
   const newUser: User = {
     ...user,
     id: String(list.length + 1),
@@ -76,10 +89,26 @@ export function addUser(user: Omit<User, "id" | "rating" | "gamesPlayed" | "wins
     losses: 0,
     draws: 0,
   };
-  list.push(newUser);
+  
+  customUsers.push(newUser);
+  
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set("chess_registered_users", encodeURIComponent(JSON.stringify(customUsers)), {
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax"
+    });
+  } catch (e) {
+    console.error("Failed to set cookies:", e);
+  }
+  
   return newUser;
 }
 
-export function findUserByEmail(email: string): User | undefined {
-  return getUsers().find((u) => u.email.toLowerCase() === email.toLowerCase());
+export async function findUserByEmail(email: string): Promise<User | undefined> {
+  const list = await getUsers();
+  return list.find((u) => u.email.toLowerCase() === email.toLowerCase());
 }
