@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { motion } from "framer-motion";
-import { saveGameState, loadGameState, CACHE_KEYS, cacheGet, cacheSet } from "@/lib/cache";
+import { saveGameState, loadGameState, CACHE_KEYS, cacheGet, cacheSet, addRecentGame } from "@/lib/cache";
 import PlayerTimer from "./PlayerTimer";
 import MoveHistory from "./MoveHistory";
 import GameOverModal from "./GameOverModal";
@@ -12,7 +12,18 @@ import { playMoveSound, playCaptureSound, playCheckSound, playGameOverSound } fr
 
 type Difficulty = "easy" | "medium" | "hard";
 type GameMode = "ai" | "human";
-interface Props { userName: string; userRating: number; userAvatar: string; }
+interface Props {
+  userName: string;
+  userRating: number;
+  userAvatar: string;
+  initialGameMode?: GameMode;
+  initialBotId?: string;
+  isCoachMode?: boolean;
+  opponentName?: string;
+  opponentRating?: number;
+  opponentAvatar?: string;
+  initialFen?: string;
+}
 
 interface ChessBot {
   id: string;
@@ -37,12 +48,25 @@ const THEME_COLORS = {
   cyber: { dark: "#3f3f46", light: "#e4e4e7" }
 };
 
-export default function ChessBoardGame({ userName, userRating, userAvatar }: Props) {
-  const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+export default function ChessBoardGame({
+  userName,
+  userRating,
+  userAvatar,
+  initialGameMode,
+  initialBotId,
+  isCoachMode = false,
+  opponentName,
+  opponentRating,
+  opponentAvatar,
+  initialFen,
+}: Props) {
+  const START_FEN = initialFen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
   const [fen, setFen] = useState(START_FEN);
   const [moves, setMoves] = useState<string[]>([]);
-  const [gameMode, setGameMode] = useState<GameMode>("ai");
-  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+  const [gameMode, setGameMode] = useState<GameMode>(initialGameMode || "ai");
+  const [difficulty, setDifficulty] = useState<Difficulty>(
+    (BOTS.find(b => b.id === initialBotId)?.difficulty || "medium") as Difficulty
+  );
   const [isGameOver, setIsGameOver] = useState(false);
   const [gameOverInfo, setGameOverInfo] = useState({ winner: "", reason: "" });
   const [showModal, setShowModal] = useState(false);
@@ -53,8 +77,59 @@ export default function ChessBoardGame({ userName, userRating, userAvatar }: Pro
   const [blackTime, setBlackTime] = useState(600);
   const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
   const [boardTheme, setBoardTheme] = useState<keyof typeof THEME_COLORS>("wood");
-  const [selectedBot, setSelectedBot] = useState<ChessBot>(BOTS[2]); // Nelson ELO 1300
+  const [selectedBot, setSelectedBot] = useState<ChessBot>(
+    BOTS.find(b => b.id === initialBotId) || BOTS[2]
+  );
   const [activeTab, setActiveTab] = useState<"play" | "settings">("play");
+
+  const [coachAdvice, setCoachAdvice] = useState<string>("");
+  const [bestMoveStr, setBestMoveStr] = useState<string>("");
+  const [bestMoveObj, setBestMoveObj] = useState<any>(null);
+
+  useEffect(() => {
+    if (!isCoachMode) return;
+    const g = chessRef.current;
+    
+    if (g.isGameOver()) {
+      if (g.isCheckmate()) {
+        setCoachAdvice("Checkmate! A decisive finish.");
+      } else {
+        setCoachAdvice("The game ends in a draw.");
+      }
+      setBestMoveStr("");
+      setBestMoveObj(null);
+      return;
+    }
+    
+    if (g.inCheck()) {
+      setCoachAdvice("You are in check! Look for ways to block, capture, or move your king.");
+    } else {
+      const score = evaluateBoard(g);
+      const evalText = score === 0 ? "The material is completely balanced." : score > 0 ? `White is up +${score} in material.` : `Black is up +${Math.abs(score)} in material.`;
+      
+      const best = getBestMoveObj(g);
+      if (best) {
+        setBestMoveStr(best.san);
+        setBestMoveObj(best);
+        setCoachAdvice(`${evalText} Focus on controlling the center. Best move option is suggested below.`);
+      } else {
+        setBestMoveStr("");
+        setBestMoveObj(null);
+        setCoachAdvice(`${evalText} Think carefully about your positional strategy.`);
+      }
+    }
+  }, [fen, isCoachMode]);
+
+  const highlightCoachHint = () => {
+    if (!bestMoveObj) return;
+    setOptionSq({
+      [bestMoveObj.from]: { backgroundColor: "rgba(212, 175, 55, 0.4)" },
+      [bestMoveObj.to]: { backgroundColor: "rgba(212, 175, 55, 0.6)" },
+    });
+    setTimeout(() => {
+      setOptionSq({});
+    }, 2000);
+  };
 
   const [customLightSquare, setCustomLightSquare] = useState("#f0d9b5");
   const [customDarkSquare, setCustomDarkSquare] = useState("#b58863");
@@ -110,8 +185,10 @@ export default function ChessBoardGame({ userName, userRating, userAvatar }: Pro
   // Load cached game
   useEffect(() => {
     try {
-      const m = cacheGet(CACHE_KEYS.GAME_MODE, "ai") as GameMode;
-      const d = cacheGet(CACHE_KEYS.AI_DIFFICULTY, "medium") as Difficulty;
+      const m = initialGameMode || (cacheGet(CACHE_KEYS.GAME_MODE, "ai") as GameMode);
+      const d = initialBotId 
+        ? (BOTS.find(b => b.id === initialBotId)?.difficulty || "medium") as Difficulty
+        : (cacheGet(CACHE_KEYS.AI_DIFFICULTY, "medium") as Difficulty);
       setGameMode(m); modeRef.current = m;
       setDifficulty(d); diffRef.current = d;
       const cached = loadGameState();
@@ -143,6 +220,15 @@ export default function ChessBoardGame({ userName, userRating, userAvatar }: Pro
     setGameOverInfo({ winner, reason });
     setShowModal(true);
     saveGameState({ isGameOver: true, winner, fen: g.fen(), moveHistory: currentMoves });
+    addRecentGame({
+      id: Math.random().toString(36).substring(2, 9),
+      date: new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }),
+      opponent: opponentName || (mode === "ai" ? selectedBot.name : "Local Friend"),
+      result: winner === "You" || winner === "white" ? "win" : winner === "draw" ? "draw" : "loss",
+      moves: Math.ceil(currentMoves.length / 2),
+      duration: "5m",
+      opening: "Standard Opening",
+    });
   }
 
   async function makeAiMove(g: Chess, currentMoves: string[], diff: Difficulty, mode: GameMode) {
@@ -300,9 +386,9 @@ export default function ChessBoardGame({ userName, userRating, userAvatar }: Pro
         {/* Top Player (Opponent) */}
         <PlayerTimer
           color={playerColor === "white" ? "black" : "white"}
-          label={gameMode === "ai" ? selectedBot.name : "Opponent"}
-          avatar={gameMode === "ai" ? <span style={{ fontSize: "1.3rem" }}>{selectedBot.avatar}</span> : <User size={20} />}
-          rating={gameMode === "ai" ? selectedBot.rating : 1200}
+          label={opponentName || (gameMode === "ai" ? selectedBot.name : "Opponent")}
+          avatar={opponentAvatar ? <span style={{ fontSize: "1.3rem" }}>{opponentAvatar}</span> : (gameMode === "ai" ? <span style={{ fontSize: "1.3rem" }}>{selectedBot.avatar}</span> : <User size={20} />)}
+          rating={opponentRating || (gameMode === "ai" ? selectedBot.rating : 1200)}
           initialSeconds={playerColor === "white" ? blackTime : whiteTime}
           isActive={topTimerActive}
           onTimeout={() => {
@@ -428,6 +514,32 @@ export default function ChessBoardGame({ userName, userRating, userAvatar }: Pro
 
         {activeTab === "play" ? (
           <>
+            {isCoachMode && (
+              <div className="glass-card sidebar-card" style={{ border: "1px solid var(--border-gold)" }}>
+                <p className="sidebar-title" style={{ color: "var(--gold)", display: "flex", alignItems: "center", gap: 6 }}>
+                  🧠 Coach Advice
+                </p>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 12 }}>
+                  <span style={{ fontSize: "2rem" }}>👴</span>
+                  <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", padding: 10, borderRadius: 8, fontSize: "0.82rem", lineHeight: 1.4 }}>
+                    {coachAdvice || "Hi! Make a move and I'll analyze it for you in real-time."}
+                  </div>
+                </div>
+                {bestMoveStr && (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem", background: "rgba(212, 175, 55, 0.05)", padding: "8px 12px", borderRadius: 6 }}>
+                    <span style={{ color: "var(--text-muted)" }}>Recommended:</span>
+                    <span style={{ fontWeight: 700, color: "var(--gold)", marginRight: 8 }}>{bestMoveStr}</span>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={highlightCoachHint}
+                      style={{ padding: "4px 8px", fontSize: "0.72rem" }}
+                    >
+                      Show Hint
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             {/* Play Mode Selection */}
             <div className="glass-card sidebar-card">
               <p className="sidebar-title">Game Mode</p>
@@ -659,4 +771,56 @@ export default function ChessBoardGame({ userName, userRating, userAvatar }: Pro
         onNewGame={() => { setShowModal(false); newGame(); }} onClose={() => setShowModal(false)} />
     </div>
   );
+}
+
+function evaluateBoard(g: Chess): number {
+  let score = 0;
+  const board = g.board();
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const piece = board[r][c];
+      if (piece) {
+        let val = 0;
+        if (piece.type === "p") val = 1;
+        else if (piece.type === "n") val = 3;
+        else if (piece.type === "b") val = 3;
+        else if (piece.type === "r") val = 5;
+        else if (piece.type === "q") val = 9;
+        else if (piece.type === "k") val = 100;
+        
+        if (piece.color === "w") {
+          score += val;
+        } else {
+          score -= val;
+        }
+      }
+    }
+  }
+  return score;
+}
+
+function getBestMoveObj(g: Chess) {
+  const moves = g.moves({ verbose: true });
+  if (moves.length === 0) return null;
+  
+  let bestMove = moves[0];
+  let bestVal = g.turn() === "w" ? -1000 : 1000;
+  
+  for (const m of moves) {
+    const temp = new Chess(g.fen());
+    temp.move(m);
+    const val = evaluateBoard(temp);
+    if (g.turn() === "w") {
+      if (val > bestVal) {
+        bestVal = val;
+        bestMove = m;
+      }
+    } else {
+      if (val < bestVal) {
+        bestVal = val;
+        bestMove = m;
+      }
+    }
+  }
+  return bestMove;
 }
