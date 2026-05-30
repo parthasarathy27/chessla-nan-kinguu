@@ -1,48 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-
-// Demo users — no database needed, works instantly on Vercel
-const DEMO_USERS = [
-  {
-    id: "1",
-    name: "Grand Master",
-    email: "admin@chessgame.com",
-    password: "chess123",
-    username: "grandmaster",
-    avatar: "GM",
-    rating: 2800,
-    gamesPlayed: 142,
-    wins: 98,
-    losses: 32,
-    draws: 12,
-  },
-  {
-    id: "2",
-    name: "Chess Player",
-    email: "player@chessgame.com",
-    password: "play123",
-    username: "chessplayer",
-    avatar: "CP",
-    rating: 1450,
-    gamesPlayed: 55,
-    wins: 28,
-    losses: 20,
-    draws: 7,
-  },
-  {
-    id: "3",
-    name: "Knight Rider",
-    email: "knight@chessgame.com",
-    password: "knight123",
-    username: "knightrider",
-    avatar: "KR",
-    rating: 1900,
-    gamesPlayed: 89,
-    wins: 55,
-    losses: 25,
-    draws: 9,
-  },
-];
+import { findUserByEmail, getUsers } from "./users";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -56,13 +14,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = DEMO_USERS.find(
-          (u) =>
-            u.email === credentials.email &&
-            u.password === credentials.password
-        );
+        const user = findUserByEmail(credentials.email as string);
 
-        if (!user) return null;
+        if (!user || user.password !== credentials.password) return null;
 
         return {
           id: user.id,
@@ -118,4 +72,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "chess-game-super-secret-key-gaming-company-2024",
 });
 
-export { DEMO_USERS };
+export const DEMO_USERS = getUsers();

@@ -18,13 +18,32 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    // For demo: auto-login with existing demo user if email matches
-    const result = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-    if (result?.error) {
-      setError("Registration is demo-only. Use one of the pre-set demo accounts below, or click Login to try them.");
-    } else {
-      router.push("/play");
+
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to register account.");
+      }
+
+      // Automatically login after successful registration
+      const result = await signIn("credentials", { email, password, redirect: false });
+      
+      if (result?.error) {
+        setError("Account created successfully, but automatic login failed. Please sign in manually.");
+      } else {
+        router.push("/play");
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred during registration. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -72,9 +91,9 @@ export default function RegisterPage() {
 
         <div className="demo-credentials" style={{ marginTop: 20 }}>
           <p style={{ color: "var(--gold)", fontWeight: 600, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-            <Sparkles size={16} /> Demo Mode
+            <Sparkles size={16} /> Quick Start Demo
           </p>
-          <p>Use these existing demo accounts to sign in:</p>
+          <p>Or log in instantly using one of these pre-configured accounts:</p>
           <ul style={{ marginTop: 8, paddingLeft: 16, lineHeight: 2, fontSize: "0.82rem" }}>
             <li><strong style={{ color: "var(--gold)" }}>admin@chessgame.com</strong> / chess123</li>
             <li><strong style={{ color: "var(--gold)" }}>player@chessgame.com</strong> / play123</li>
